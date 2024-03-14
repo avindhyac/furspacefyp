@@ -1,0 +1,102 @@
+body {
+	font-family: 'Nunito', sans-serif;
+	margin: 0;
+	padding: 0;
+	background-color: #f0f2f5;
+	color: #333;
+}
+
+.top-bar {
+	background-color: #333;
+	color: #fff;
+	padding: 10px;
+	text-align: left;
+	justify-content: space-between; /* Ensures items are spaced apart */
+}
+
+.top-bar a {
+	color: #fff;
+	text-decoration: none;
+	margin-right: 20px;
+}
+
+.top-bar i {
+	font-size: 24px;
+	margin-right: 10px;
+}
+
+.top-bar .right-corner {
+	margin-left: auto; /* Pushes the "Friends" link to the right */
+}
+
+.footer {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background-color: #333;
+	color: #fff;
+	padding: 10px;
+	text-align: center;
+	display: flex;
+	justify-content: space-around;
+}
+
+.footer a {
+	color: #fff;
+	text-decoration: none;
+}
+
+.footer i {
+	font-size: 24px;
+}
+
+.feed {
+	max-width: 600px;
+	margin: 20px auto;
+}
+
+.post {
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.post p {
+	margin: 0;
+	font-size: 18px;
+	line-height: 1.6;
+}
+
+.post img {
+	width: calc(100% - 10px);
+	border-radius: 8px;
+	margin: 3px;
+}
+
+.actions {
+	margin-top: 10px;
+	text-align: right;
+}
+
+.actions button {
+	background-color: #4caf50;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.actions button:hover {
+	background-color: #45a049;
+}
+
+.likes-comments {
+	font-size: 14px;
+	color: #777;
+	margin-top: 10px;
+}
