@@ -100,9 +100,8 @@ export default {
     };
   },
   filters: {
-    niceDate(timeStamp) {
-      const dateObject = new Date(timeStamp * 1000);
-      const formattedDate = date.formatDate(dateObject, "MMMM D h:mm A");
+    niceDate(value) {
+      const formattedDate = date.formatDate(value, "MMMM D h:mm A");
       return formattedDate;
     },
   },
