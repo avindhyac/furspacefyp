@@ -1,4 +1,4 @@
-/* eslint-env node */
+/* eslint-env node *API_LIVE/
 
 /*
  * This file runs in a Node context (it's NOT transpiled by Babel), so use only
@@ -9,6 +9,9 @@
 // https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js
 
 const { configure } = require("quasar/wrappers");
+
+let API_LOCAL = "http://localhost:2000";
+let API_LIVE = "https://furspacefyp.cyclic.app";
 
 module.exports = configure(function (ctx) {
   return {
@@ -43,6 +46,9 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-build
     build: {
+      env: {
+        API: API_LOCAL, // API_LOCAL | API_LIVE
+      },
       vueRouterMode: "hash", // available values: 'hash', 'history'
 
       // transpile: false,
@@ -92,7 +98,7 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ["Dialog"],
+      plugins: ["Dialog", "Notify", "Loading"],
     },
 
     // animations: 'all', // --- includes all animations

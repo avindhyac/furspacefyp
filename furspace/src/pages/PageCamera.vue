@@ -13,6 +13,7 @@
       <q-btn
         v-if="hasCameraSupport"
         @click="captureImage"
+        :disable="imageCaptured"
         round
         color="primary"
         icon="fa-solid fa-camera"
@@ -39,7 +40,7 @@
     <div class="row justify-center q-ma-md">
       <q-input
         v-model="post.caption"
-        label="Caption"
+        label="Caption *"
         class="col col-sm-6"
         dense
       />
@@ -65,7 +66,14 @@
       </q-input>
     </div>
     <div class="row justify-center q-mt-lg">
-      <q-btn unelevated rounded color="primary" label="Post Image" />
+      <q-btn
+        @click="addPost"
+        :disable="!post.caption || !post.img"
+        unelevated
+        rounded
+        color="primary"
+        label="Post Image"
+      />
     </div>
   </q-page>
 </template>
@@ -117,13 +125,13 @@ export default {
       let context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       this.imageCaptured = true;
-      // this.post.photo = canvas.toDataURL();
-      this.post.photo = this.dataURItoBlob(canvas.toDataURL());
+      // this.post.img = canvas.toDataURL();
+      this.post.img = this.dataURItoBlob(canvas.toDataURL());
       this.disableCamera();
     },
 
     captureImageFallback(file) {
-      this.post.photo = file;
+      this.post.img = file;
       const reader = new FileReader();
       let canvas = this.$refs.canvas;
       const context = canvas.getContext("2d");
@@ -171,10 +179,44 @@ export default {
       let blob = new Blob([ab], { type: mimeString });
       return blob;
     },
+    addPost() {
+      this.$q.loading.show({
+        spinnerColor: "primary",
+        spinnerSize: 140,
+        backgroundColor: "black",
+        message: "Creating your post, hang on a moment",
+      });
+      let formData = new FormData();
+      formData.append("id", this.post.id);
+      formData.append("caption", this.post.caption);
+      formData.append("location", this.post.location);
+      formData.append("date", this.post.date);
+      formData.append("file", this.post.img, this.post.id + ".png");
 
+      this.$axios
+        .post(`${process.env.API}/createPost`, formData)
+        .then((response) => {
+          console.log("RESPONSE", response);
+          this.$router.push("/");
+          this.$q.notify({
+            message: "Post created",
+            icon: "fa-solid fa-check",
+            color: "primary",
+            textColor: "white",
+          });
+          this.$q.loading.hide();
+        })
+        .catch((error) => {
+          console.log("ERROR", error);
+          this.$q.dialog({
+            title: "Error",
+            message: "We couldn't create your post right now 😞",
+          });
+          this.$q.loading.hide();
+        });
+    },
     getLocation() {
       this.locationLoading = true;
-      console.log("getLocation");
       navigator.geolocation.getCurrentPosition(
         (position) => {
           this.getCityAndCountry(position);

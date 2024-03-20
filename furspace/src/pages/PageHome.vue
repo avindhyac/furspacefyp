@@ -125,7 +125,6 @@ export default {
       const formatted = this.posts.map((post) =>
         this.formatNiceDate(post.date)
       );
-      console.log(formatted);
       return formatted;
     },
   },
@@ -133,9 +132,10 @@ export default {
     getPosts() {
       this.loadingPosts = true;
       this.$axios
-        .get("http://localhost:2000/posts")
+        .get(`${process.env.API}/posts`)
         .then((response) => {
           this.posts = response.data;
+          console.log(this.posts);
           // this.posts = [];
           this.loadingPosts = false;
         })
@@ -150,7 +150,6 @@ export default {
 
     formatNiceDate(value) {
       const formattedString = date.formatDate(new Date(value), "MMMM D h:mm A");
-      console.log(formattedString); // Log the formatted date to check
       return formattedString;
     },
   },
