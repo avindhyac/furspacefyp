@@ -207,8 +207,8 @@ export default {
 
     locationError() {
       this.$q.dialog({
-        title: "Alert",
-        message: "Some message",
+        title: "Error",
+        message: "We couldn't find your location 😵‍💫",
       });
       this.locationLoading = false;
     },
