@@ -23,7 +23,7 @@
 
       <div class="row justify-center q-ma-md">
         <q-file
-          @input="captureImageFallback"
+          @input="handleFileUpload"
           label-color="deep-purple-1"
           bg-color="primary"
           filled
@@ -80,6 +80,7 @@
 
 <script>
 import { uid } from "quasar";
+import * as tf from "@tensorflow/tfjs";
 require("md-gum-polyfill");
 export default {
   name: "PageCamera",
@@ -117,6 +118,7 @@ export default {
           this.hasCameraSupport = false;
         });
     },
+
     captureImage() {
       let video = this.$refs.video;
       let canvas = this.$refs.canvas;
@@ -125,35 +127,99 @@ export default {
       let context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       this.imageCaptured = true;
-      // this.post.img = canvas.toDataURL();
+      console.log("Image captured and going to classify");
+      this.classifyImage(canvas);
       this.post.img = this.dataURItoBlob(canvas.toDataURL());
       this.disableCamera();
     },
 
-    captureImageFallback(file) {
-      this.post.img = file;
-      const reader = new FileReader();
-      let canvas = this.$refs.canvas;
-      const context = canvas.getContext("2d");
+    async classifyImage(canvas) {
+      try {
+        const classLabels = ["Angry", "Happy", "Relaxed", "Sad"];
 
-      // Upload image to canvas
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          context.drawImage(img, 0, 0);
-          this.imageCaptured = true;
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
+        // Load model from backend endpoint
+        const model = await tf.loadLayersModel(
+          "http://localhost:2000/model/model.json" // Assuming your backend endpoint is '/model'
+        );
+
+        // Preprocess image
+        const imageData = this.preprocessImage(canvas);
+
+        // Perform inference
+        const predictions = await model.predict(imageData);
+
+        // Extract values from the predictions Tensor
+        const predictionsArray = await predictions.data(); // For asynchronous execution
+
+        // Find the index of the highest probability score
+        const maxIndex = predictionsArray.indexOf(
+          Math.max(...predictionsArray)
+        );
+
+        // Get the predicted class label
+        const predictedClass = classLabels[maxIndex];
+
+        console.log("Predicted class:", predictedClass);
+
+        // Log the predictions
+        console.log("Predictions: ", predictionsArray);
+
+        return predictedClass;
+
+        // You can further process the predictionsArray here
+      } catch (error) {
+        console.error("Error during classification:", error);
+      }
     },
 
-    disableCamera() {
-      this.$refs.video.srcObject.getVideoTracks().forEach((track) => {
-        track.stop();
-      });
+    preprocessImage(canvas) {
+      const tensor = tf.browser.fromPixels(canvas);
+
+      // Resize the image to [224, 224]
+      const resized = tf.image.resizeBilinear(tensor, [224, 224]);
+
+      // Expand the dimensions to match the model's input shape
+      const expanded = resized.expandDims(0);
+
+      // Normalize the pixel values to the range [0, 1]
+      const normalized = expanded.toFloat().div(tf.scalar(255));
+
+      return normalized;
+    },
+
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+
+      // Check if a file is selected
+      if (!file) {
+        return;
+      }
+
+      // Read the file as a data URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        // Create a new image element
+        const img = new Image();
+        img.onload = () => {
+          // Draw the image onto the canvas
+          const canvas = this.$refs.canvas;
+          const ctx = canvas.getContext("2d");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          // Set the captured image flag
+          this.imageCaptured = true;
+
+          // Set the img property of the post object
+          this.post.img = this.dataURItoBlob(canvas.toDataURL());
+
+          // Perform image classification
+          this.classifyImage(canvas);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     },
 
     dataURItoBlob(dataURI) {
@@ -179,19 +245,35 @@ export default {
       let blob = new Blob([ab], { type: mimeString });
       return blob;
     },
-    addPost() {
+
+    async addPost() {
       this.$q.loading.show({
         spinnerColor: "primary",
         spinnerSize: 140,
         backgroundColor: "black",
         message: "Creating your post, hang on a moment",
       });
+
+      let predictedClass = null;
+
+      if (this.post.img) {
+        // Capture image from canvas
+        let canvas = this.$refs.canvas;
+
+        // Perform image classification
+        predictedClass = await this.classifyImage(canvas);
+        console.log("CLASS WHEN POSTING: ", predictedClass);
+      }
+
       let formData = new FormData();
       formData.append("id", this.post.id);
       formData.append("caption", this.post.caption);
       formData.append("location", this.post.location);
       formData.append("date", this.post.date);
       formData.append("file", this.post.img, this.post.id + ".png");
+
+      // Append predicted class to the form data
+      formData.append("predictedClass", predictedClass);
 
       this.$axios
         .post(`${process.env.API}/createPost`, formData)
@@ -215,6 +297,7 @@ export default {
           this.$q.loading.hide();
         });
     },
+
     getLocation() {
       this.locationLoading = true;
       navigator.geolocation.getCurrentPosition(

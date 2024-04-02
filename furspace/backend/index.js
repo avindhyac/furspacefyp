@@ -16,6 +16,7 @@ const {
 const { getStorage } = require("firebase-admin/storage");
 const busboy = require("busboy");
 const path = require("path");
+const cors = require("cors");
 const os = require("os");
 const fs = require("fs");
 const UUID = require("uuid-v4");
@@ -25,6 +26,8 @@ const UUID = require("uuid-v4");
 */
 const app = express();
 const port = 2000;
+app.use(cors());
+app.use("/model", express.static(path.join(__dirname, "models")));
 
 /* 
     firebase configuration
@@ -127,6 +130,7 @@ app.post("/createPost", (request, response) => {
           id: fields.id,
           caption: fields.caption,
           location: fields.location,
+          emotion: fields.predictedClass,
           date: parseInt(fields.date),
           imageURL: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${uuid}`,
         })
@@ -138,6 +142,20 @@ app.post("/createPost", (request, response) => {
 
   request.pipe(bb);
 });
+
+// // Define endpoint to serve model files
+// // app.get("/model", (req, res) => {
+// //   const modelFilePath = path.join(__dirname, "models", "model.json");
+// //   fs.readFile(modelFilePath, (err, data) => {
+// //     if (err) {
+// //       console.error("Error reading model file:", err);
+// //       res.status(500).send("Internal Server Error");
+// //       return;
+// //     }
+// //     res.setHeader("Content-Type", "application/json");
+// //     res.send(data);
+// //   });
+// });
 
 /* 
     listen

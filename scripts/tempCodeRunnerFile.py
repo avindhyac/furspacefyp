@@ -1,1 +1,1 @@
-shear_range=0.2,
+model.save('C:/Users/Avindhya Cabral/Documents/Work/Uni/UCLAN/Y3 - Sem 1/FYP/furspacefyp/model-mobilenet2.keras')

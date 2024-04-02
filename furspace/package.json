@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",
+    "@tensorflow/tfjs": "^4.17.0",
     "axios": "^1.2.1",
     "core-js": "^3.31.1",
     "md-gum-polyfill": "^1.0.0",

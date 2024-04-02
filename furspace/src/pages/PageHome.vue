@@ -19,7 +19,7 @@
 
               <q-item-section>
                 <q-item-label
-                  >{{ post.user }} is feeling
+                  >Dog is feeling
                   <strong>{{ post.emotion }}</strong></q-item-label
                 >
                 <q-item-label caption>{{ post.location }}</q-item-label>
@@ -36,9 +36,6 @@
               </div>
             </q-card-section>
           </q-card>
-        </template>
-        <template v-else-if="!loadingPosts && !posts.length">
-          <h5 class="text-center text-grey">Make some friends!</h5>
         </template>
         <template v-else>
           <q-card flat bordered>
@@ -135,7 +132,7 @@ export default {
         .get(`${process.env.API}/posts`)
         .then((response) => {
           this.posts = response.data;
-          console.log(this.posts);
+          // console.log(this.posts);
           // this.posts = [];
           this.loadingPosts = false;
         })
