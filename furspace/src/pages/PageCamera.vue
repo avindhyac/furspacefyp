@@ -104,6 +104,8 @@ export default {
         date: Date.now(),
         emotion: "",
       },
+      // MODEL_URL: //"http://localhost:2000/model/model.json" // LOCAL
+      MODEL_URL: "https://furspacefyp.cyclic.app/mode/model.json", // LIVE
       hasCameraSupport: true,
       imageCaptured: false,
       imageUpload: [],
@@ -151,9 +153,7 @@ export default {
         const classLabels = ["Angry", "Happy", "Relaxed", "Sad"];
 
         // Load model from backend endpoint
-        const model = await tf.loadLayersModel(
-          "http://localhost:2000/model/model.json" // Assuming your backend endpoint is '/model'
-        );
+        const model = await tf.loadLayersModel(this.MODEL_URL);
 
         // Preprocess image
         const imageData = this.preprocessImage(canvas);
