@@ -6,6 +6,6 @@
 
 <script>
 export default {
-  name: "PageCamera",
+  name: "PageProfile",
 };
 </script>

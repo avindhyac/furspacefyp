@@ -65,6 +65,16 @@
         </template>
       </q-input>
     </div>
+    <div class="row justify-center q-ma-md">
+      <q-select
+        v-model="selectedEmotion"
+        :options="emotionOptions"
+        label="Emotion *"
+        filled
+        :disable="!imageCaptured"
+        class="col col-sm-6"
+      />
+    </div>
     <div class="row justify-center q-mt-lg">
       <q-btn
         @click="addPost"
@@ -92,11 +102,14 @@ export default {
         location: "",
         img: null,
         date: Date.now(),
+        emotion: "",
       },
       hasCameraSupport: true,
       imageCaptured: false,
       imageUpload: [],
       locationLoading: false,
+      selectedEmotion: "", // emotion from select to override predicted emotion
+      emotionOptions: ["Angry", "Happy", "Sad", "Relaxed"],
     };
   },
   computed: {
@@ -161,10 +174,15 @@ export default {
 
         console.log("Predicted class:", predictedClass);
 
+        if (predictedClass && this.emotionOptions.includes(predictedClass)) {
+          this.selectedEmotion = predictedClass;
+          this.post.emotion = predictedClass;
+        }
+
         // Log the predictions
         console.log("Predictions: ", predictionsArray);
 
-        return predictedClass;
+        return this.post.emotion;
 
         // You can further process the predictionsArray here
       } catch (error) {
@@ -245,7 +263,15 @@ export default {
       let blob = new Blob([ab], { type: mimeString });
       return blob;
     },
-
+    // updatePostEmotion() {
+    //   if (
+    //     this.selectedEmotion &&
+    //     this.emotionOptions.includes(this.selectedEmotion)
+    //   ) {
+    //     console.log("Emotion overridden to: ", this.selectedEmotion);
+    //     this.post.emotion = this.selectedEmotion;
+    //   }
+    // },
     async addPost() {
       this.$q.loading.show({
         spinnerColor: "primary",
@@ -254,15 +280,15 @@ export default {
         message: "Creating your post, hang on a moment",
       });
 
-      let predictedClass = null;
-
       if (this.post.img) {
         // Capture image from canvas
         let canvas = this.$refs.canvas;
 
         // Perform image classification
-        predictedClass = await this.classifyImage(canvas);
-        console.log("CLASS WHEN POSTING: ", predictedClass);
+        // predictedClass = await this.classifyImage(canvas);
+        console.log("Selected Emotion:", this.selectedEmotion);
+        this.post.emotion = this.selectedEmotion;
+        console.log("CLASS WHEN POSTING: ", this.post.emotion);
       }
 
       let formData = new FormData();
@@ -273,7 +299,7 @@ export default {
       formData.append("file", this.post.img, this.post.id + ".png");
 
       // Append predicted class to the form data
-      formData.append("predictedClass", predictedClass);
+      formData.append("predictedClass", this.post.emotion);
 
       this.$axios
         .post(`${process.env.API}/createPost`, formData)
